@@ -18,14 +18,9 @@ import numpy as np
 import tensorflow as tf
 
 
-# here are the directories where I put the training and the test data...
-# I also put the relevant .csv version of the labels in each of the directories...
 train_dir = './images/train/'
 test_dir = './images/test/'
 
-
-# NOTE... it seems that with the input images, the important part is just in the middle...
-# we need to CROP the images...
 # with a size of 1024 x 1024 it causes Out-Of-Memory for my laptop
 
 
@@ -34,8 +29,6 @@ print('TRAINING DATA...')
 # OK, lets go and try and load in the training images from the correct directory...
 train_img_names = glob.glob(train_dir + '*.jpg')
 print('Number of training images:', len(train_img_names), '... and one Example Image:', train_img_names[0])
-
-# and lets take a look at it :-(
 
 raw_img = Image.open(train_img_names[0])
 img_data = np.asarray(raw_img)
@@ -65,16 +58,13 @@ print('img_data.dtype', img_data.dtype)
 
 # now the target is to get our set of training images into a numpy array of shape [batch, height, width]
 # and the matching labels into an array of shape [batch, 8]  8 being the coordinates for the two bounding boxes
-# note batch is 364... as there are 364 images...
-
-# firstly, lets throw all of the labels into a dictionary...
 label_dict = {}
 train_label_files = glob.glob(train_dir + '*.csv')
 with open(train_label_files[0], 'rt') as infile:
     reader = csv.reader(infile)
-    # now process each row...
+    # now process each row
     for each_row in reader:
-        # use the file name as the dictionary key...
+        # use the file name as the dictionary key
         file_name = each_row[0]  # first element
         
         if file_name == 'filename':
@@ -100,20 +90,19 @@ img_list = []
 label_list = []
 
 for each_img_name in train_img_names:
-    # load each image...
+    # load each image
     raw_img = Image.open(each_img_name)
     raw_img = raw_img.crop((left, top, right, bottom))
-    # and lets convert to grayscale... it seems that each of the RGB pixels is the same number...
+    # and lets convert to grayscale... it seems that each of the RGB pixels is the same number
     # so lets just grab the 'R' value, and take that as the grayscale value
     gray_img = np.asarray(raw_img)[:,:,0]
     # and add this into the img_list
     img_list.append(gray_img)
     
-    # and now we need to find the sync-ed label data from the dictionary...
-    label_file_name = each_img_name.split('\\')[1]  # maybe is OK..
+    # and now we need to find the sync-ed label data from the dictionary
+    label_file_name = each_img_name.split('\\')[1]  
     
     if label_file_name in label_dict:
-        # good... we found the label data...
         label_list.append(label_dict[label_file_name])
     else:
         raise Exception('did not find the related label data for image:', label_file_name)
@@ -145,16 +134,15 @@ print('img_data.dtype', img_data.dtype)
 
 # now the target is to get our set of test images into a numpy array of shape [batch, height, width]
 # and the matching labels into an array of shape [batch, 8]  8 being the coordinates for the two bounding boxes
-# note batch is 41... as there are 41 images... (i think its 41)
 
 # firstly, lets throw all of the labels into a dictionary...
 label_dict = {}
 test_label_files = glob.glob(test_dir + '*.csv')
 with open(test_label_files[0], 'rt') as infile:
     reader = csv.reader(infile)
-    # now process each row...
+    # now process each row
     for each_row in reader:
-        # use the file name as the dictionary key...
+        # use the file name as the dictionary key
         file_name = each_row[0]  # first element
         
         if file_name == 'filename':
@@ -164,13 +152,11 @@ with open(test_label_files[0], 'rt') as infile:
         if file_name not in label_dict:
             # add it
             label_dict[file_name] = []
-        # now add in the data...
         label_dict[file_name].append(int(each_row[4]))
         label_dict[file_name].append(int(each_row[5]))
         label_dict[file_name].append(int(each_row[6]))
         label_dict[file_name].append(int(each_row[7]))
         
-        # and if the labe_dict has 8 elements per file, then convert them to a numpy array
         if len(label_dict[file_name]) == 8:
             label_dict[file_name] = np.array(label_dict[file_name])
 
@@ -180,20 +166,20 @@ img_list = []
 label_list = []
 
 for each_img_name in test_img_names:
-    # load each image...
+    # load each image
     raw_img = Image.open(each_img_name)
     raw_img = raw_img.crop((left, top, right, bottom))
-    # and lets convert to grayscale... it seems that each of the RGB pixels is the same number...
+    # and lets convert to grayscale
     # so lets just grab the 'R' value, and take that as the grayscale value
     gray_img = np.asarray(raw_img)[:,:,0]
     # and add this into the img_list
     img_list.append(gray_img)
     
-    # and now we need to find the sync-ed label data from the dictionary...
+    # and now we need to find the sync-ed label data from the dictionary
     label_file_name = each_img_name.split('\\')[1]  # maybe is OK..
     
     if label_file_name in label_dict:
-        # good... we found the label data...
+        # good we found the label data
         label_list.append(label_dict[label_file_name])
     else:
         raise Exception('did not find the related label data for image:', label_file_name)
@@ -202,7 +188,7 @@ for each_img_name in test_img_names:
 test_images = np.array(img_list)
 test_labels = np.array(label_list)
 
-print('All test data collected into test_images, test labels, numpy arrays...')
+print('All test data collected into test_images, test labels, numpy arrays')
 print('test_images.shape', test_images.shape)
 print('test_images.dtype', test_images.dtype)
 print('test_labels.shape', test_labels.shape)
@@ -212,10 +198,9 @@ train_images = train_images / 255.0
 
 test_images = test_images / 255.0
 
-# change the model a little...
 # the inputs are now 1024 x 1024
 
-# and we have 8 separate numbers coming out of the model... for the 2 bounding boxes
+# and we have 8 separate numbers coming out of the model for the 2 bounding boxes
 
 #model = tf.keras.Sequential([
 #    tf.keras.layers.Dense(64, activation='relu'),              # I get Out-Of-Memory with 128, 64
@@ -284,7 +269,6 @@ base_model = tf.keras.applications.MobileNetV2(input_shape=(350,350,3),
 base_model.trainable = True
 
 
-## Sparse didnt work for me... so I guessed I could remove the Sparse...
 ##model.compile(optimizer='adam',
 ##              loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
 ##              metrics=['accuracy'])
@@ -292,12 +276,12 @@ base_model.trainable = True
 #              loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
 #              metrics=['accuracy'])
 
-# just going to do a simple least squares loss... nothing fancy.
+# just going to do a simple least squares loss
 model.compile(optimizer='adam',
               loss=tf.keras.losses.MeanSquaredError(),
               metrics=['accuracy'])
 
-#save trained model...
+#save trained model
 checkpoint_path = "./self_trained_models/cp.ckpt"
 checkpoint_dir = os.path.dirname(checkpoint_path)
 
@@ -317,7 +301,7 @@ predictions = model.predict(test_images)
 print(predictions[0])
 print(predictions[1])
 
-# printing out predictions for visualization...
+# printing out predictions for visualization
 test_img_show = Image.open(test_img_names[0])
 test_img_data = np.asarray(test_img_show)
 #plt.imshow(test_img_data)
