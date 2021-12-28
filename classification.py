@@ -4,15 +4,10 @@
 #
 #(train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
 import os
-# glob gives a list of files... filtered...
 import glob
-# and try Pillow for image import
 from PIL import Image
-# and use this for displaying images inline
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-#matplotlib inline
-# and for processing csv files...
 import csv
 import numpy as np
 import tensorflow as tf
@@ -20,9 +15,6 @@ import tensorflow as tf
 
 train_dir = './images/train/'
 test_dir = './images/test/'
-
-# with a size of 1024 x 1024 it causes Out-Of-Memory for my laptop
-
 
 print('##############################################')
 print('TRAINING DATA...')
@@ -49,7 +41,7 @@ bottom = (1024 + NEW_IMG_HEIGHT)/2
 # Crop the center of the image
 raw_img = raw_img.crop((left, top, right, bottom))
 img_data = np.asarray(raw_img)
-print('Showing a cropped example image...')
+print('Showing a cropped example image')
 print('img_data.shape', img_data.shape)
 print('img_data.dtype', img_data.dtype)
 #plt.imshow(img_data)
@@ -111,7 +103,7 @@ for each_img_name in train_img_names:
 train_images = np.array(img_list)
 train_labels = np.array(label_list)
 
-print('All training data collected into train_images, train labels, numpy arrays...')
+print('All training data collected into train_images, train labels, numpy arrays')
 print('train_images.shape', train_images.shape)
 print('train_images.dtype', train_images.dtype)
 print('train_labels.shape', train_labels.shape)
